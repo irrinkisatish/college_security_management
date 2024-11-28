@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+    <head>
+      <link rel="stylesheet" href="loginpages.css">
+
+      <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous" />
+      <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+      <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
+      <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <title>Security login</title>
+    </head>
+    
+    <body>
+      
+      <nav class="navbar navbar-expand-lg navbar-light bg-white ">
+        <div class="container col-12">
+          <a class="navbar-brand" href="#">
+            <img src="images/college1.jpg"  class="logo-top">
+          </a>
+          <div class="mt-1">
+           
+          </div>
+          
+            <button class="navbar-toggler mr-0 ml-0" type="button"  data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon" ></span>
+            </button>
+            <div class="collapse navbar-collapse " id="navbarNavAltMarkup">
+                <div class="navbar-nav ml-auto ">
+                    <a class="nav-link"  style="color:black" href="Visitor.html" id="navItem2" class="small-dev">Guest</a>
+                    <a class="nav-link"  style="color:black" href="securitylogin.html" id="navItem3" class="small-dev">Security</a>
+                    <a class="nav-link"  style="color:black"s href="facultylogin.html" id="navItem4" class="small-dev">Faculty</a>   
+                    <div class="nav-item dropdown">
+                        <a  style="color:black" class="nav-link dropdown-toggle" href="#" id="navItemDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            Security Policies
+                        </a>
+                        <div class="dropdown-menu" aria-labelledby="navItemDropdown">
+                            <a class="dropdown-item" href="resource.html">Resources</a>
+                            <a class="dropdown-item" href="report.html">Report</a>
+                        </div>
+                    </div>
+             
+              
+
+                </div>
+            </div>
+        </div>
+    </nav>
+    
+    
+    <div class="login-form">
+      
+      <div class="container">
+          <div class="main">
+              <div class="content">
+                  <h2>Log In</h2>
+                  <form id="loginForm" action="/securityloginform" class="d-flex flex-column m-4">
+                    <label for="username">username</label>
+                    <input type="text" name="username" placeholder="username" required/>
+                    <p id="usernameInvalid" class="d-none" style="color:red"></p>
+                    <label for="password">Password</label>
+                    <input type="password" name="password" placeholder="Password" required/>
+                    <p id="passwordInvalid" class="d-none" style="color:red"></p>
+                    <div class="d-flex flex-row justify-content-center mt-5">
+                      <button type="submit" class="btn btn-primary">Sign In</button>
+                    </div>
+                  </form>
+             
+                   
+              </div>
+              <div class="form-img">
+                  <img src="images/bg.png" alt="">
+              </div>
+          </div>
+      </div>
+  </div>
+
+              <script>
+    
+      
+document.getElementById('loginForm').addEventListener('submit', async function(event) {
+  event.preventDefault(); // Prevent default form submission
+
+  const formData = new FormData(this); // Get form data
+  const url = this.action; // Get form action URL
+
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(Object.fromEntries(formData))
+    });
+
+    const responseData = await response.json();
+    
+    if (!response.ok) {
+      
+      if (responseData.error === 'Invalid Username') {
+ 
+        document.getElementById('usernameInvalid').classList.remove('d-none');
+        document.getElementById('passwordInvalid').classList.add('d-none');
+        document.getElementById('usernameInvalid').textContent = 'Invalid Username';
+      } else if (responseData.error === 'Invalid Password') {
+       
+        document.getElementById('passwordInvalid').classList.remove('d-none');
+        document.getElementById('usernameInvalid').classList.add('d-none');
+        document.getElementById('passwordInvalid').textContent = 'Invalid Password';
+      } else {
+        console.error('Unknown error:', responseData.error);
+      }
+      return;
+    }
+
+    if (responseData.token) {
+     
+      localStorage.setItem('jwtToken', responseData.token);
+      window.location.href = `/securitypage.html`;
+    } else {
+      console.error('JWT Token not received.');
+    }
+  } catch (error) {
+    console.error('Fetch error:', error);
+  }
+});
+
+
+        </script>         
+    </body>
+</html>

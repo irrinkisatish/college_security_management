@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Audiowide|Sofia|Trirong">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous" />
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+    <link rel="stylesheet" href="style.css">
+</head>
+<style>
+    * {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  display: flex;
+  justify-content: center;
+  height: 100vh;
+}
+
+.form {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.center {
+  text-align: center;
+}
+
+.verification {
+  margin-top: 20px;
+  display: none;
+}
+
+.otp-input-fields {
+  margin: auto;
+  /* background-color: red; */
+  box-shadow: 0px 0 8px 0px #02024066;
+  max-width: 420px;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  padding: 30px;
+}
+
+.otp_num {
+  width: 40px;
+  height: 40px;
+  text-align: center;
+  outline: none;
+  border-radius: 4px;
+  border: 1px solid #2f8f1f;
+  font-size: 14px;
+}
+
+.otp_num::-webkit-inner-spin-button,
+.otp_num::-webkit-outer-spin-button {
+  appearance: none;
+}
+
+.success,
+.error {
+  display: none;
+  text-align: center;
+}
+#timer {
+            display: none;
+            color: blue;
+        }
+</style>
+<body>
+
+    <div class="container m-4">
+        <h3 class="text-primary center">OTP Verification</h3>
+        <div class="row form">
+            <div class="col-auto">
+                <lable>Enter Your Email:</lable>
+                <input type="email" class="form-control email">
+            </div>
+            <div class="col-auto">
+                <button class="btn btn-primary" onclick="sendOTP()">Send OTP</button>
+            </div>
+
+        </div>
+        <div class="d-flex flex-row justify-content-center">
+            <div>
+        <p id="timer" >Waiting for response: <span id="timeLeft">30</span> seconds</p>
+    </div>
+    </div>
+        <div class="success text-success">
+            OTP verified Success fully 
+            <div class="d-flex flex-row justify-content-center">
+                <form id="newpasswordform" class="d-flex flex-column justify-content-center col-md-5">
+                    <label style="color: black;">New Password</label>
+                    <input type="password" id="passwordnew" name="passwordnew" required/>
+                    <label style="color: black;">Re-enter New Password</label>
+                    <input type="password" id="passwordrenew" name="passwordrenew" required/>
+                    <div class="mt-3">
+                    <button type="button" id="submitnewpwd" class="btn btn-primary ">Submit</button>
+                </div>
+                    <p id="message" style="color: red;"></p>
+                </form>
+            </div>
+        </div>
+        
+        <p id="messagere" style="text-align: center; color:blue"></p>
+    
+        <div class="verification">
+            <div class="title center">
+                <p>An OTP has been sent to <span class="emailpartial"></span></p>
+            </div>
+            <div class="otp-input-fields">
+                <input type="number" class="otp_num otp_num_1" maxlength="1">
+                <input type="number" class="otp_num otp_num_2" maxlength="1">
+                <input type="number" class="otp_num otp_num_3" maxlength="1">
+                <input type="number" class="otp_num otp_num_4" maxlength="1">
+            </div>
+        </div>
+        <div class="error text-danger">
+            Invalid otp
+        </div>
+    </div>
+
+    <script>
+
+        let emailEle = document.querySelector('.email');
+        let verfEle = document.querySelector('.verification');
+        let successEle = document.querySelector('.success');
+        let errorEle = document.querySelector('.error');
+        let otp_inputs = document.querySelectorAll('.otp_num');
+        let emailpartialEle = document.querySelector('.emailpartial');
+        let regex = new RegExp('[a-zA-Z0-9]+@[a-z]+\.[a-z]{2,3}');
+        let otp_check = '';
+        let email;
+
+        otp_inputs.forEach(
+            (ip) => {
+                ip.addEventListener('keyup', moveNext)
+            }
+        )
+
+        function moveNext(event) {
+            // otp_num_4
+
+            let current = event.target;
+            let index = current.classList[1].slice(-1);
+            if (event.keyCode == 8 && index > 1) {
+                current.previousElementSibling.focus()
+            }
+            else if (index < 4) {
+                current.nextElementSibling.focus()
+
+            }
+            otp_check = '';
+            for (ip of otp_inputs) {
+                otp_check += ip.value
+            }
+            if (otp_check.length == 4) {
+                verifyOTP()
+            }
+
+
+
+
+
+        }
+
+        function verifyOTP() {
+            fetch('/verify',
+                {
+                    method: "POST",
+                    body: JSON.stringify({
+                        "email": `${email}`,
+                        "otp": `${otp_check}`
+                    }),
+                    headers: { 'Content-Type': 'application/json' }
+
+
+                }
+            )
+                .then(
+                    (res) => {
+                        console.log(res)
+                        if (res.status == 200) {
+                            verfEle.style.display = 'none';
+                            successEle.style.display = 'block';
+                            errorEle.style.display = 'none';
+
+                        }
+                        else {
+                            errorEle.style.display = 'block';
+                            errorEle.innerHTML = "Invalid OTP";
+                            successEle.style.display = 'none';
+
+                        }
+                    }
+                )
+
+        }
+
+
+
+        function sendOTP() {
+    email = emailEle.value;
+    const timerEle = document.getElementById("timer");
+    const timeLeftEle = document.getElementById("timeLeft");
+
+    if (regex.test(email)) {
+        timerEle.style.display = 'block';
+        let timeLeft = 30;
+        const timerInterval = setInterval(() => {
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                timerEle.style.display = 'none';
+                errorEle.style.display = 'block';
+                errorEle.innerHTML = "Request timed out. Please try again.";
+                successEle.style.display = 'none';
+            } else {
+                timeLeftEle.textContent = timeLeft;
+                timeLeft--;
+            }
+        }, 1000);
+
+        fetch('/sendfacultyotp', {
+            method: "POST",
+            body: JSON.stringify({ "email": email }),
+            headers: { 'Content-Type': 'application/json' }
+        })
+        .then((res) => {
+            clearInterval(timerInterval);
+            timerEle.style.display = 'none';
+            if (res.status == 200) {
+                verfEle.style.display = 'block';
+                emailpartialEle.textContent = "***" + email.slice(3);
+                emailEle.value = '';
+                errorEle.style.display = 'none';
+            } else {
+                errorEle.style.display = 'block';
+                errorEle.innerHTML = "Email not exist";
+                successEle.style.display = 'none';
+            }
+        })
+        .catch((error) => {
+            clearInterval(timerInterval);
+            timerEle.style.display = 'none';
+            errorEle.style.display = 'block';
+            errorEle.innerHTML = "An error occurred. Please try again.";
+            successEle.style.display = 'none';
+        });
+    } else {
+        errorEle.style.display = 'block';
+        errorEle.innerHTML = "Invalid Email";
+        successEle.style.display = 'none';
+    }
+}
+    document.getElementById("submitnewpwd").onclick = function(){
+     
+            const passwordNew = document.getElementById("passwordnew").value;
+            const passwordReNew = document.getElementById("passwordrenew").value;
+            const message = document.getElementById("message");
+
+            if (passwordNew === passwordReNew) {
+                // Clear any previous error message
+                message.textContent = "";
+
+                // Make the fetch request to the server
+                fetch('resetfacultypassword', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ Email:email,password: passwordNew })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const messagere = document.getElementById("messagere");
+                        let countdown = 3;
+                        message.style.color = "green";
+                        message.textContent = "Password changed successfully!";
+                        const timerInterval = setInterval(() => {
+                    countdown--;
+                    if (countdown > 0) {
+                        messagere.textContent = `Password changed successfully! Redirecting in ${countdown} seconds...`;
+                    } else {
+                        clearInterval(timerInterval);
+                        window.location.href = "facultylogin.html";
+                    }
+                }, 1000); 
+                    } else {
+                        message.style.color = "red";
+                        message.textContent = "Error changing password.";
+                    }
+                })
+                .catch(error => {
+                    message.style.color = "red";
+                    message.textContent = "Error changing password.";
+                });
+            } else {
+                // Display an error message if passwords do not match
+                message.textContent = "Passwords do not match.";
+            }
+    
+    }
+
+    </script>
+</body>
+
+</html>

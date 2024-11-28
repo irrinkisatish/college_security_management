@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <title>Faculty Page</title>
+    <style>
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 8px; text-align: left; border-bottom: 1px solid #ddd; }
+        .tablebutton { padding: 5px 10px; background-color: #28a745; color: white; border: none; cursor: pointer; margin-right: 5px;}
+        .tablebutton:hover { background-color: #218838; }
+        .btn-link-style {
+            background: none;
+            border: none;
+            color: blue;
+            cursor: pointer;
+            text-decoration: underline;
+            padding: 0;
+           
+        }
+
+        .btn-link-style:hover {
+            color: navy;
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="d-flex justify-content-between">
+        <h1>Visit Requests</h1>
+        <button type="button" id="logoutButton" class="btn-link-style">Log Out</button>
+    </div>
+    
+
+    <table id="facultyTable" border="1">
+        <tr>
+            <th>Visitor Name</th>
+            <th>Contact Number</th>
+            <th>Reason</th>
+            <th>Response</th>
+        </tr>
+    </table>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const token = localStorage.getItem('jwtToken'); // Get token from local storage
+
+fetch('/api/faculty/visitrequests', {
+    method: 'GET',
+    headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}` // Include token in Authorization header
+    }
+})
+                .then(response => response.json())
+                .then(data => {
+                    const table = document.getElementById('facultyTable');
+                    table.innerHTML = `
+                        <tr>
+                            <th>Visitor Name</th>
+                            <th>Contact Number</th>
+                            <th>Reason</th>
+                            <th>Response</th>
+                        </tr>
+                    `;
+                    
+                    data.forEach(row => {
+                        const tr = document.createElement('tr');
+
+                        // Create cells
+                        const visitorNameCell = document.createElement('td');
+                        visitorNameCell.textContent = row.visitor_name;
+                        tr.appendChild(visitorNameCell);
+
+                        const contactCell = document.createElement('td');
+                        contactCell.textContent = row.contact;
+                        tr.appendChild(contactCell);
+
+                        const reasonCell = document.createElement('td');
+                        reasonCell.textContent = row.reason;
+                        tr.appendChild(reasonCell);
+
+                        const responseCell = document.createElement('td');
+                        const acceptButton = document.createElement('button');
+                        acceptButton.classList.add("tablebutton")
+                        acceptButton.textContent = 'Accept';
+                        acceptButton.onclick = function() {
+                            respondVisit(row.id, 'Accepted');
+                            responseCell.textContent = 'Accepted';
+                        };
+                        responseCell.appendChild(acceptButton);
+
+                        const rejectButton = document.createElement('button');
+                        rejectButton.classList.add("tablebutton")
+                        rejectButton.textContent = 'Reject';
+                        rejectButton.onclick = function() {
+                            respondVisit(row.id, 'Ignored');
+                            responseCell.textContent = 'Ignored';
+                        };
+                        responseCell.appendChild(rejectButton);
+
+                        tr.appendChild(responseCell);
+
+                        // Append row to table
+                        table.appendChild(tr);
+                    });
+                })
+                .catch(error => console.error('Error fetching visit requests:', error));
+        });
+
+        function respondVisit(visitId, status) {
+            const token = localStorage.getItem('jwtToken'); // Get token from local storage
+
+fetch('/api/faculty/respond-visit', {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}` // Include token in Authorization header
+    },
+    body: JSON.stringify({ visitId, status })
+})
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);
+                location.reload(); // Reload the page to update the table
+            })
+            .catch(error => console.error('Error responding to visit:', error));
+        }
+        const handleLogout = () => {
+    fetch('/facultylogout', {
+        method: 'GET',
+        headers: {
+            'Authorization': `Bearer ${localStorage.getItem('jwtToken')}`
+        }
+    })
+    .then(response => {
+        if (response.ok) {
+            // Clear local storage
+            localStorage.removeItem('jwtToken');
+            setTimeout(() => {
+              window.location.href = "facultylogin.html";
+            }, 1000);
+              
+           
+        } else {
+            throw new Error('Logout request failed');
+        }
+    })
+    .catch(error => {
+        console.error('Error logging out:', error);
+        // Handle error or display error message to the user
+    });
+};
+
+
+document.getElementById('logoutButton').addEventListener('click', handleLogout);
+    </script>
+</body>
+</html>
+

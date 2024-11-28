@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous" />
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <title>Register</title>
+
+        <style>
+            @import url('https://fonts.googleapis.com/css2?family=Bree+Serif&family=Caveat:wght@400;700&family=Lobster&family=Monoton&family=Open+Sans:ital,wght@0,400;0,700;1,400;1,700&family=Playfair+Display+SC:ital,wght@0,400;0,700;1,700&family=Playfair+Display:ital,wght@0,400;0,700;1,700&family=Roboto:ital,wght@0,400;0,700;1,400;1,700&family=Source+Sans+Pro:ital,wght@0,400;0,700;1,700&family=Work+Sans:ital,wght@0,400;0,700;1,700&display=swap');
+ 
+            body{
+                background-size:cover;
+                display: flex;
+                flex-direction:column;
+                align-items:center;
+                padding:30px;
+            }
+            .register-card{
+                backdrop-filter: blur(10px);
+                background-color: rgba(255, 255, 255, 0.5);
+
+                border-radius: 25px;
+            }
+            h2{
+               
+                font-size:32px;
+                font-family:"Lobster";
+            }
+            button{
+                width:100px;
+            }
+          
+            @media screen and (max-width:1080px) {
+                label{
+            font-size: 32px;
+            
+        }
+        select{
+            width: 100%;
+            height: 50px;
+            font-size: 25px;
+        }
+        input{
+            width: 100%;
+            height: 50px;
+            font-size: 25px;
+        }
+        input[type="radio"]{
+        width:80px !important;
+
+    }
+    input[type="date"]{
+        border-width: 2px;
+
+    }
+    .btn-success{
+        width:220px;
+            height:100px;
+            font-size:32px;
+    }
+    h2{
+        font-size:50px;
+    }
+    input[type="checkbox"]{
+        width:80px !important;
+
+    }
+    .head-label{
+            font-weight: bold;
+        }
+                
+            }
+        </style>
+</head>
+<body>
+    <h2>Faculty Register Form</h2>
+        <div class="col-12 col-lg-4 register-card">
+            <form  action="/registerfaculty" method="post" enctype="multipart/form-data" class="d-flex flex-column">
+
+                 <label for="firstName" class="head-label">First Name:</label>
+        <input type="text" id="firstName" name="firstName"><br>
+
+        <label for="lastName" class="head-label">Last Name:</label>
+        <input type="text" id="lastName" name="lastName"><br>
+
+        <label for="password" class="head-label">Password:</label>
+        <input type="password" id="password" name="password"><br>
+
+        <label for="phone" class="head-label">Phone Number:</label>
+        <input type="text" id="phone" name="phone"><br>
+
+        <label for="email" class="head-label">Email:</label>
+        <input type="text" id="email" name="email"><br>
+
+        <label for="gender" class="head-label">Gender:</label>
+        <div class="d-flex flex-row">
+            <div class="d-flex flex-row">
+        <input type="radio" id="gender" value="Male" name="gender" >
+        <label for="gender">Male</label>
+    </div>
+    <div  class="d-flex flex-row">
+        <input type="radio" id="gender" value="Female" name="gender">
+        <label id="gender">Female</label>
+    </div>
+        </div>
+        <label for="dob" class="head-label">Date of Birth:</label>
+        <input type="date" id="dob" name="dob"><br>
+
+        <label for="address" class="head-label">Address:</label>
+        <input type="text" id="address" name="address"><br>
+        
+        <label for="student_year" class="head-label"  style="font-weight: bold;">Teaching Year:</label>
+        <div id="yearCheckboxes">
+            <div class="d-flex flex-row">
+                <input type="checkbox" id="year1" name="teaching_year" value="1st Year">
+                <label for="year1">1st Year Students</label>
+            </div>
+            <div class="d-flex flex-row">
+                <input type="checkbox" id="year2" name="teaching_year" value="2nd Year">
+                <label for="year2">2nd Year Students</label>
+            </div>
+            <div class="d-flex flex-row"> 
+                <input type="checkbox" id="year3" name="teaching_year" value="3rd Year">
+                <label for="year3">3rd Year Students</label>
+            </div>
+            <div class="d-flex flex-row"> 
+                <input type="checkbox" id="year4" name="teaching_year" value="3rd Year">
+                <label for="year4">4rd Year Students</label>
+            </div>
+        </div>
+        
+        <label for="selected_branch" style="font-weight: bold;">Select Branch:</label>
+        <div id="selected_branch" class="checkbox-group">
+         
+        </div><br>
+    
+        <label for="selected_group" style="font-weight: bold;">Select Group:</label>
+        <div id="selected_group" class="checkbox-group">
+          
+        </div><br>
+    
+        <label for="file" class="head-label"><span style="font-weight: bold;">Photo</span><br>Choose File:</label>
+        <input type="file" id="file" name="file" accept="image/*"><br>
+        <div class="d-flex flex-row justify-content-center">
+            <button type="submit" class="btn btn-success">Submit</button>
+        </div>
+    </form>
+        </div>
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+       $(document).ready(function () {
+      
+        $.get('http://localhost:3305/branches', function (data) {
+            data.forEach(function (branch) {
+                $('#selected_branch').append(`
+                    <div class="checkbox">
+                        <label>
+                            <input type="checkbox" name="selected_branch" value="${branch.id}"> ${branch.name}
+                        </label>
+                    </div>
+                `);
+            });
+        });
+
+  
+        $(document).on('change', 'input[name="selected_branch"]', function () {
+            const selectedBranches = $('input[name="selected_branch"]:checked').map(function() {
+                return this.value;
+            }).get();
+
+            $('#selected_group').empty(); 
+            $('#selected_subject').empty(); 
+
+            selectedBranches.forEach(function(branchId) {
+                $.get(`http://localhost:3305/groups/${branchId}`, function (data) {
+                    data.forEach(function (group) {
+                        $('#selected_group').append(`
+                            <div class="checkbox">
+                                <label>
+                                    <input type="checkbox" name="selected_group" value="${group.id}"> ${group.name}
+                                </label>
+                            </div>
+                        `);
+                    });
+                });
+            });
+        });
+
+      
+        
+    });
+    </script>
+</body>
+</html>

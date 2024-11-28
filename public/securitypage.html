@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <title>Security Page</title>
+    <style>
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 8px; text-align: left; border-bottom: 1px solid #ddd; }
+        .tablebutton { padding: 5px 10px; background-color: #28a745; color: white; border: none; cursor: pointer; }
+        .tablebutton:hover { background-color: #218838; }
+        .waiting { color: orange; }
+        .accepted { color: green; }
+        .ignored { color: red; }
+    </style>
+</head>
+<body>
+    <div class="d-flex justify-content-between">
+        <h1>Visitor Requests</h1>
+        <button type="button" id="logoutButton" class="btn-link-style">Log Out</button>
+    </div>
+  
+    <table id="visitorTable" border="1">
+        <tr>
+            <th>Visitor Name</th>
+            <th>Contact Number</th>
+            <th>Reason</th>
+            <th>Faculty Name</th>
+            <th>Status</th>
+            <th>Request</th>
+            <th>Remove</th>
+        </tr>
+    </table>
+
+    <script>
+       
+       document.addEventListener('DOMContentLoaded', function() {
+            const token = localStorage.getItem('jwtToken');
+
+            fetch('/api/security/visitrequests', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    const table = document.getElementById('visitorTable');
+                    table.innerHTML = `
+                        <tr>
+                            <th>Visitor Name</th>
+                            <th>Contact Number</th>
+                            <th>Reason</th>
+                            <th>Faculty Name</th>
+                            <th>Status</th>
+                            <th>Request</th>
+                            <th>Remove</th>
+                        </tr>
+                    `;
+                    
+                    data.forEach(row => {
+                       
+                        const tr = document.createElement('tr');
+
+                        // Create cells
+                        const visitorNameCell = document.createElement('td');
+                        visitorNameCell.textContent = row.visitor_name;
+                        tr.appendChild(visitorNameCell);
+
+                        const contactCell = document.createElement('td');
+                        contactCell.textContent = row.contact;
+                        tr.appendChild(contactCell);
+
+                        const reasonCell = document.createElement('td');
+                        reasonCell.textContent = row.reason;
+                        tr.appendChild(reasonCell);
+
+                        const facultyNameCell = document.createElement('td');
+                        facultyNameCell.textContent = row.faculty_name;
+                        tr.appendChild(facultyNameCell);
+
+                        const statusCell = document.createElement('td');
+                        statusCell.textContent = row.status;
+                        statusCell.className = row.status.toLowerCase();
+                        tr.appendChild(statusCell);
+
+                        const requestCell = document.createElement('td');
+                        const sendButton = document.createElement('button');
+                        sendButton.textContent = 'Send';
+                        sendButton.classList.add("tablebutton");
+                        sendButton.disabled = row.status !== 'Pending';
+                        sendButton.onclick = function() {
+                          
+                            processVisit(row.vid, 'Waiting');
+                            statusCell.textContent = 'Waiting';
+                            statusCell.className = 'waiting';
+                            sendButton.disabled = true;
+                        };
+                        requestCell.appendChild(sendButton);
+                        tr.appendChild(requestCell);
+
+                        const removeCell = document.createElement('td');
+                        const removeButton = document.createElement('button');
+                        removeButton.classList.add("tablebutton")
+                        removeButton.textContent = 'Remove';
+                        removeButton.onclick = function() {
+                            removeVisit(row.vid, row.visitor_id);
+                        };
+                        removeCell.appendChild(removeButton);
+                        tr.appendChild(removeCell);
+
+                        // Append row to table
+                        table.appendChild(tr);
+                    });
+                })
+                .catch(error => console.error('Error fetching visitor details:', error));
+        });
+
+        function processVisit(visitId, status) {
+            const token = localStorage.getItem('jwtToken');
+
+            fetch('/api/security/process-visit', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ visitId, status })
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);
+                location.reload(); // Reload the page to update the table
+            })
+            .catch(error => console.error('Error processing visit:', error));
+        }
+
+        function removeVisit(visitId, visitorId) {
+            const token = localStorage.getItem('jwtToken');
+
+            fetch('/api/security/remove-visit', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                  
+                },
+                body: JSON.stringify({ visitId, visitorId })
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);
+                location.reload(); // Reload the page to update the table
+            })
+            .catch(error => console.error('Error removing visit:', error));
+        }
+        const handleLogout = () => {
+    fetch('/securitylogout', {
+        method: 'GET',
+        headers: {
+            'Authorization': `Bearer ${localStorage.getItem('jwtToken')}`
+        }
+    })
+    .then(response => {
+        if (response.ok) {
+            // Clear local storage
+            localStorage.removeItem('jwtToken');
+            setTimeout(() => {
+              window.location.href = "securitylogin.html";
+            }, 1000);
+              
+           
+        } else {
+            throw new Error('Logout request failed');
+        }
+    })
+    .catch(error => {
+        console.error('Error logging out:', error);
+    
+    });
+};
+
+
+document.getElementById('logoutButton').addEventListener('click', handleLogout);
+    </script>
+</body>
+</html>

@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Audiowide|Sofia|Trirong">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto">
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous" />
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <title>Visitor</title>
+    </head>
+    <style>
+
+body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f8f9fa;
+            padding: 20px;
+        }
+        h1 {
+            font-family: 'Audiowide', sans-serif;
+            text-align: center;
+            margin-bottom: 20px;
+            color: #343a40;
+        }
+        .form-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .form-group label {
+            font-weight: bold;
+            color: #495057;
+        }
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%;
+        }
+        button[type="submit"] {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            background-color: #007bff;
+            color: #ffffff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+        .response {
+            margin-top: 20px;
+            text-align: center;
+            font-weight: bold;
+            color:green;
+        }
+    </style>
+    <body>
+        <h1>Visitor Registration Form</h1>
+        <form id="visitForm">
+            <div class="form-group">
+                <label for="visitorName">Visitor Name:</label>
+                <input type="text" id="visitorName" name="visitorName" required>
+            </div>
+            <div class="form-group">
+                <label for="contact">Contact Number:</label>
+                <input type="text" id="contact" name="contact" required>
+            </div>
+            <div class="form-group">
+                <label for="facultyId">Faculty to Meet:</label>
+                <select id="facultyId" name="facultyId" required>
+                    <option value="" disabled selected>Select Faculty</option>
+             
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="reason">Reason for Visit:</label>
+                <textarea id="reason" name="reason" rows="4" required></textarea>
+            </div>
+            <button type="submit">Submit Visit Request</button>
+        </form>
+        <div class="response" id="responseMessage"></div>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+    const visitForm = document.getElementById('visitForm');
+    const responseMessage = document.getElementById('responseMessage');
+
+    fetch('/api/faculty')
+        .then(response => response.json())
+        .then(data => {
+            const facultySelect = document.getElementById('facultyId');
+         
+            data.forEach(faculty => {
+                const option = document.createElement('option');
+                option.value = faculty.id;
+                const fullname = faculty.firstname+" "+faculty.lastname;
+                option.textContent = fullname;
+                facultySelect.appendChild(option);
+            });
+        });
+
+    visitForm.addEventListener('submit', function(event) {
+        event.preventDefault();
+        const visitorName = document.getElementById('visitorName').value;
+        const contact = document.getElementById('contact').value;
+        const facultyId = document.getElementById('facultyId').value;
+        const reason = document.getElementById('reason').value;
+
+        fetch('/api/security/register-visit', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ visitorName, contact, facultyId, reason })
+        })
+        .then(response => response.json())
+        .then(data => {
+            responseMessage.textContent = data.message;
+        })
+        .catch(error => {
+            responseMessage.textContent = 'Error submitting request. Please try again.';
+            console.error(error);
+        });
+    });
+});
+
+        </script>
+    </body>
+</html>
